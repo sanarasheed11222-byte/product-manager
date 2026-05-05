@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ProductBase — Login</title>
+  <link rel="stylesheet" href="css/auth.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- Left Panel -->
+  <div class="split-left">
+    <div class="brand">
+      <span class="brand-mark">⬡</span>
+      <span class="brand-name">ProductBase</span>
+    </div>
+    <div class="hero-text">
+      <h1>Manage your<br/><span class="highlight">products</span><br/>with ease.</h1>
+      <p>Full CRUD product management with real-time stats, search, and filters.</p>
+    </div>
+    <div class="floating-cards">
+      <div class="fcard fcard-1">📦 120 Products</div>
+      <div class="fcard fcard-2">✅ 98 Active</div>
+      <div class="fcard fcard-3">📈 +12% this week</div>
+    </div>
+  </div>
+
+  <!-- Right Panel -->
+  <div class="split-right">
+    <div class="auth-box">
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active" id="tabLogin" onclick="switchTab('login')">Login</button>
+        <button class="tab" id="tabSignup" onclick="switchTab('signup')">Sign Up</button>
+        <div class="tab-slider" id="tabSlider"></div>
+      </div>
+
+      <!-- Login Form -->
+      <form class="auth-form" id="loginForm">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="loginEmail" class="input-field" placeholder="you@example.com" required/>
+          <span class="field-err" id="loginEmailErr"></span>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-wrap">
+            <input type="password" id="loginPassword" class="input-field" placeholder="••••••••" required/>
+            <button type="button" class="eye-btn" onclick="togglePass('loginPassword', this)">👁</button>
+          </div>
+          <span class="field-err" id="loginPassErr"></span>
+        </div>
+        <button type="submit" class="btn-submit" id="loginBtn">
+          <span id="loginLabel">Login to Dashboard</span>
+          <span class="btn-spin hidden" id="loginSpin">⏳</span>
+        </button>
+        <p class="switch-text">Don't have an account? <a href="#" onclick="switchTab('signup')">Sign up</a></p>
+      </form>
+
+      <!-- Signup Form -->
+      <form class="auth-form hidden" id="signupForm">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="signupName" class="input-field" placeholder="John Doe" required/>
+          <span class="field-err" id="signupNameErr"></span>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="signupEmail" class="input-field" placeholder="you@example.com" required/>
+          <span class="field-err" id="signupEmailErr"></span>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-wrap">
+            <input type="password" id="signupPassword" class="input-field" placeholder="Min. 6 characters" required/>
+            <button type="button" class="eye-btn" onclick="togglePass('signupPassword', this)">👁</button>
+          </div>
+          <span class="field-err" id="signupPassErr"></span>
+        </div>
+        <button type="submit" class="btn-submit" id="signupBtn">
+          <span id="signupLabel">Create Account</span>
+          <span class="btn-spin hidden" id="signupSpin">⏳</span>
+        </button>
+        <p class="switch-text">Already have an account? <a href="#" onclick="switchTab('login')">Login</a></p>
+      </form>
+
+      <!-- Alert -->
+      <div class="auth-alert hidden" id="authAlert"></div>
+
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+</body>
+</html>

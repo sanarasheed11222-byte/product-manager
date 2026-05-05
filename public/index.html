@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ProductBase — Manager</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <header class="header">
+  <div class="header-inner">
+    <div class="logo"><span class="logo-mark">⬡</span> ProductBase</div>
+    <div class="header-actions">
+      <span class="connection-dot" id="connDot" title="API Status"></span>
+      <span class="user-greeting" id="userGreeting"></span>
+      <button class="btn btn-primary" id="btnOpenAdd"><span>+</span> Add Product</button>
+      <button class="btn btn-ghost" id="btnLogout">Logout</button>
+    </div>
+  </div>
+</header>
+
+  <main class="main">
+
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-body"><div class="stat-num" id="sTotal">—</div><div class="stat-lbl">Total Products</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-body"><div class="stat-num green" id="sActive">—</div><div class="stat-lbl">Active</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🚫</div>
+        <div class="stat-body"><div class="stat-num red" id="sInactive">—</div><div class="stat-lbl">Inactive</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🏷️</div>
+        <div class="stat-body"><div class="stat-num accent" id="sStock">—</div><div class="stat-lbl">Total Stock</div></div>
+      </div>
+    </section>
+
+    <section class="controls-bar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" class="input-field" placeholder="Search by name or category…"/>
+      </div>
+      <select id="filterCat" class="input-field select-field">
+        <option value="">All Categories</option>
+      </select>
+      <select id="filterStatus" class="input-field select-field">
+        <option value="">All Status</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+      <button class="btn btn-ghost" id="btnRefresh">↺ Refresh</button>
+    </section>
+
+    <section class="table-section">
+      <div class="table-wrap">
+        <table class="prod-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Name</th><th>Category</th><th>Price</th>
+              <th>Stock</th><th>Status</th><th>Created</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="8" class="empty-row"><div class="spinner"></div> Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-footer"><span id="rowCount">0 products</span></div>
+    </section>
+
+  </main>
+
+  <!-- Add/Edit Modal -->
+  <div class="overlay" id="overlay">
+    <div class="modal" id="modal">
+      <div class="modal-head">
+        <h2 class="modal-title" id="modalTitle">Add Product</h2>
+        <button class="modal-x" id="btnCloseModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="productForm" novalidate>
+          <input type="hidden" id="fId"/>
+          <div class="form-row two-col">
+            <div class="form-group">
+              <label for="fName">Product Name <span class="req">*</span></label>
+              <input type="text" id="fName" class="input-field" placeholder="e.g. Wireless Headphones"/>
+              <span class="field-err" id="errName"></span>
+            </div>
+            <div class="form-group">
+              <label for="fCategory">Category <span class="req">*</span></label>
+              <input type="text" id="fCategory" class="input-field" placeholder="e.g. Electronics"/>
+              <span class="field-err" id="errCategory"></span>
+            </div>
+          </div>
+          <div class="form-row two-col">
+            <div class="form-group">
+              <label for="fPrice">Price (USD) <span class="req">*</span></label>
+              <input type="number" id="fPrice" class="input-field" placeholder="0.00" step="0.01" min="0"/>
+              <span class="field-err" id="errPrice"></span>
+            </div>
+            <div class="form-group">
+              <label for="fStock">Stock Qty <span class="req">*</span></label>
+              <input type="number" id="fStock" class="input-field" placeholder="0" min="0"/>
+              <span class="field-err" id="errStock"></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="fStatus">Status</label>
+            <select id="fStatus" class="input-field select-field">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" id="btnCancel">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btnSubmit">
+              <span id="submitLabel">Save Product</span>
+              <span class="btn-spinner hidden" id="submitSpinner">⏳</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirm Modal -->
+  <div class="overlay" id="deleteOverlay">
+    <div class="modal confirm-modal">
+      <div class="confirm-icon">🗑️</div>
+      <h3 id="deleteMsg">Delete this product?</h3>
+      <p class="confirm-sub">This action cannot be undone.</p>
+      <div class="form-actions" style="justify-content:center;gap:12px">
+        <button class="btn btn-ghost" id="btnCancelDelete">Cancel</button>
+        <button class="btn btn-danger" id="btnConfirmDelete">Yes, Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
