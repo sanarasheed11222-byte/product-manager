@@ -16,18 +16,18 @@ const Product = {
     return rows[0] || null;
   },
 
-  create: async ({ name, category, price, stock, status }) => {
+  create: async ({ name, category, price, stock, status, image }) => {
     const [result] = await db.query(
-      'INSERT INTO products (name, category, price, stock, status) VALUES (?, ?, ?, ?, ?)',
-      [name, category, price, stock, status || 'active']
+      'INSERT INTO products (name, category, price, stock, status, image) VALUES (?, ?, ?, ?, ?, ?)',
+      [name, category, price, stock, status || 'active', image || null]
     );
     return result.insertId;
   },
 
-  update: async (id, { name, category, price, stock, status }) => {
+  update: async (id, { name, category, price, stock, status, image }) => {
     const [result] = await db.query(
-      'UPDATE products SET name=?, category=?, price=?, stock=?, status=? WHERE id=?',
-      [name, category, price, stock, status, id]
+      'UPDATE products SET name=?, category=?, price=?, stock=?, status=?, image=? WHERE id=?',
+      [name, category, price, stock, status, image || null, id]
     );
     return result.affectedRows;
   },
@@ -58,6 +58,22 @@ const Product = {
       FROM products
     `);
     return rows[0];
+  },
+
+  getPaginated: async (page = 1, limit = 5) => {
+    const offset = (page - 1) * limit;
+    const [rows] = await db.query(
+      'SELECT * FROM products ORDER BY created_at DESC LIMIT ? OFFSET ?',
+      [limit, offset]
+    );
+    const [countRows] = await db.query('SELECT COUNT(*) AS total FROM products');
+    return {
+      products: rows,
+      total: countRows[0].total,
+      page,
+      limit,
+      totalPages: Math.ceil(countRows[0].total / limit)
+    };
   }
 
 };

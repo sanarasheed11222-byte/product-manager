@@ -2,8 +2,10 @@ const Product = require('../models/productModel');
 
 const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.getAll();
-    res.status(200).json({ success: true, count: products.length, data: products });
+    const page  = parseInt(req.query.page)  || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const result = await Product.getPaginated(page, limit);
+    res.status(200).json({ success: true, ...result });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Server error: ' + err.message });
   }
@@ -29,7 +31,8 @@ const createProduct = async (req, res) => {
     if (isNaN(stock) || stock < 0)
       return res.status(400).json({ success: false, message: 'Stock must be a positive integer.' });
 
-    const insertId = await Product.create({ name, category, price, stock, status });
+    const image = req.file ? '/uploads/' + req.file.filename : null;
+    const insertId = await Product.create({ name, category, price, stock, status, image });
     const newProduct = await Product.getById(insertId);
     res.status(201).json({ success: true, message: 'Product created successfully!', data: newProduct });
   } catch (err) {
@@ -45,7 +48,8 @@ const updateProduct = async (req, res) => {
     if (!name || !category || price == null || stock == null)
       return res.status(400).json({ success: false, message: 'Fields required: name, category, price, stock.' });
 
-    await Product.update(req.params.id, { name, category, price, stock, status });
+    const image = req.file ? '/uploads/' + req.file.filename : existing.image;
+    await Product.update(req.params.id, { name, category, price, stock, status, image });
     const updated = await Product.getById(req.params.id);
     res.status(200).json({ success: true, message: 'Product updated successfully!', data: updated });
   } catch (err) {

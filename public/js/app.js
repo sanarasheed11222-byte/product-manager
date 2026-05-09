@@ -1,61 +1,115 @@
-// ── Auth Guard ─────────────────────────────────────────────────────
-(function() {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    window.location.href = '/auth.html';
-    return;
-  }
-  // Show user name in header
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const greeting = document.getElementById('userGreeting');
-  if (greeting && user.name) greeting.textContent = `👋 ${user.name}`;
-})();
+// Auth Guard
+if (!localStorage.getItem('token')) {
+  window.location.href = '/auth.html';
+}
 
-// ── Logout ─────────────────────────────────────────────────────────
-document.getElementById('btnLogout').addEventListener('click', () => {
+// Show username
+const user = JSON.parse(localStorage.getItem('user') || '{}');
+const greetingEl = document.getElementById('userGreeting');
+if (greetingEl && user.name) {
+  greetingEl.textContent = `Welcome, ${user.name}`;
+}
+
+// Logout
+document.getElementById('btnLogout')?.addEventListener('click', () => {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
   window.location.href = '/auth.html';
 });
+
+// State
 const State = {
-  products: [],
-  filtered: [],
-  search:   '',
-  category: '',
-  status:   ''
+  products:    [],
+  filtered:    [],
+  search:      '',
+  category:    '',
+  status:      '',
+  page:        1,
+  limit:       5,
+  totalPages:  1
 };
 
 document.addEventListener('DOMContentLoaded', () => {
   checkConnection();
   loadProducts();
   bindEvents();
+  renderPagination();
 });
 
 async function checkConnection() {
   const online = await ProductAPI.ping();
   UI.setConnectionStatus(online);
-  if (!online) UI.toast('Cannot connect to server. Is Node.js running on port 3000?', 'error');
+  if (!online) UI.toast('Cannot connect to server!', 'error');
 }
 
 async function loadProducts() {
   document.getElementById('tableBody').innerHTML =
-    `<tr><td colspan="8" class="empty-row"><div class="spinner"></div> Loading…</td></tr>`;
+    `<tr><td colspan="9" class="empty-row"><div class="spinner"></div> Loading…</td></tr>`;
   try {
     const [productsRes, statsRes] = await Promise.all([
-      ProductAPI.getAll(),
+      ProductAPI.getAll(State.page, State.limit),
       ProductAPI.getStats()
     ]);
     if (!productsRes.success) throw new Error(productsRes.message);
-    State.products = productsRes.data;
-    applyFilters();
+    State.products  = productsRes.products;
+    State.totalPages = productsRes.totalPages;
+    UI.renderTable(State.products);
     UI.populateCategoryFilter(State.products);
+    renderPagination();
+    document.getElementById('rowCount').textContent =
+      `${productsRes.total} product${productsRes.total !== 1 ? 's' : ''}`;
     if (statsRes.success) UI.updateStats(statsRes.data);
   } catch (err) {
     document.getElementById('tableBody').innerHTML =
-      `<tr><td colspan="8" class="empty-row" style="color:#ef4444">⚠ ${err.message}</td></tr>`;
+      `<tr><td colspan="9" class="empty-row" style="color:#f05a5a">⚠ ${err.message}</td></tr>`;
     UI.toast(err.message, 'error');
-    UI.setConnectionStatus(false);
   }
+}
+
+// Pagination
+function renderPagination() {
+  let wrap = document.getElementById('paginationWrap');
+  if (!wrap) {
+    wrap = document.createElement('div');
+    wrap.id = 'paginationWrap';
+    wrap.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;';
+    document.querySelector('.table-section').appendChild(wrap);
+  }
+
+  wrap.innerHTML = '';
+
+  if (State.totalPages <= 1) return;
+
+  // Prev button
+  const prev = document.createElement('button');
+  prev.textContent = '← Prev';
+  prev.style.cssText = btnStyle(State.page === 1);
+  prev.disabled = State.page === 1;
+  prev.onclick = () => { State.page--; loadProducts(); };
+  wrap.appendChild(prev);
+
+  // Page numbers
+  for (let i = 1; i <= State.totalPages; i++) {
+    const btn = document.createElement('button');
+    btn.textContent = i;
+    btn.style.cssText = i === State.page
+      ? 'padding:7px 14px;border-radius:7px;border:none;background:#d4af37;color:#080b12;font-weight:700;cursor:pointer;'
+      : btnStyle(false);
+    btn.onclick = () => { State.page = i; loadProducts(); };
+    wrap.appendChild(btn);
+  }
+
+  // Next button
+  const next = document.createElement('button');
+  next.textContent = 'Next →';
+  next.style.cssText = btnStyle(State.page === State.totalPages);
+  next.disabled = State.page === State.totalPages;
+  next.onclick = () => { State.page++; loadProducts(); };
+  wrap.appendChild(next);
+}
+
+function btnStyle(disabled) {
+  return `padding:7px 14px;border-radius:7px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:${disabled ? '#3d4258' : '#eef0f8'};font-weight:500;cursor:${disabled ? 'not-allowed' : 'pointer'};`;
 }
 
 function applyFilters() {
@@ -68,11 +122,24 @@ async function handleFormSubmit(e) {
   const data = UI.getFormData();
   if (!UI.validateForm(data)) return;
   UI.setSubmitLoading(true);
+
   try {
+    // Use FormData for image upload
+    const formData = new FormData();
+    formData.append('name',     data.name);
+    formData.append('category', data.category);
+    formData.append('price',    data.price);
+    formData.append('stock',    data.stock);
+    formData.append('status',   data.status);
+
+    const imageFile = document.getElementById('fImage')?.files[0];
+    if (imageFile) formData.append('image', imageFile);
+
     const isEdit = !!data.id;
     const res = isEdit
-      ? await ProductAPI.update(data.id, data)
-      : await ProductAPI.create(data);
+      ? await ProductAPI.update(data.id, formData)
+      : await ProductAPI.create(formData);
+
     if (!res.success) throw new Error(res.message);
     UI.toast(res.message, 'success');
     UI.closeModal();
@@ -115,19 +182,31 @@ function bindEvents() {
   });
 
   document.getElementById('productForm').addEventListener('submit', handleFormSubmit);
-  document.getElementById('btnRefresh').addEventListener('click', loadProducts);
+  document.getElementById('btnRefresh').addEventListener('click', () => {
+    State.page = 1;
+    loadProducts();
+  });
 
   let searchTimer;
   document.getElementById('searchInput').addEventListener('input', (e) => {
     clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => { State.search = e.target.value; applyFilters(); }, 300);
+    searchTimer = setTimeout(() => {
+      State.search = e.target.value;
+      State.page   = 1;
+      loadProducts();
+    }, 300);
   });
 
   document.getElementById('filterCat').addEventListener('change', (e) => {
-    State.category = e.target.value; applyFilters();
+    State.category = e.target.value;
+    State.page     = 1;
+    loadProducts();
   });
+
   document.getElementById('filterStatus').addEventListener('change', (e) => {
-    State.status = e.target.value; applyFilters();
+    State.status = e.target.value;
+    State.page   = 1;
+    loadProducts();
   });
 
   document.getElementById('tableBody').addEventListener('click', (e) => {
@@ -138,7 +217,7 @@ function bindEvents() {
   });
 
   document.getElementById('btnConfirmDelete').addEventListener('click', (e) => handleDelete(e.target.dataset.id));
-  document.getElementById('btnCancelDelete').addEventListener('click', UI.closeDeleteConfirm);
+  document.getElementById('btnCancelDelete').addEventListener('click',  UI.closeDeleteConfirm);
   document.getElementById('deleteOverlay').addEventListener('click', (e) => {
     if (e.target === document.getElementById('deleteOverlay')) UI.closeDeleteConfirm();
   });

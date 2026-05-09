@@ -5,89 +5,139 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ProductBase — Manager</title>
   <link rel="stylesheet" href="css/style.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 </head>
 <body>
 
-  <header class="header">
-  <div class="header-inner">
-    <div class="logo"><span class="logo-mark">⬡</span> ProductBase</div>
-    <div class="header-actions">
-      <span class="connection-dot" id="connDot" title="API Status"></span>
-      <span class="user-greeting" id="userGreeting"></span>
-      <button class="btn btn-primary" id="btnOpenAdd"><span>+</span> Add Product</button>
-      <button class="btn btn-ghost" id="btnLogout">Logout</button>
-    </div>
+  <div class="ambient">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
   </div>
-</header>
 
-  <main class="main">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">⬡</div>
+      <span class="brand-name">ProductBase</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active"><span class="nav-icon">▦</span> Dashboard</a>
+      <a href="#" class="nav-item"><span class="nav-icon">📦</span> Products</a>
+      <a href="#" class="nav-item"><span class="nav-icon">📊</span> Analytics</a>
+      <a href="#" class="nav-item"><span class="nav-icon">⚙️</span> Settings</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="conn-pill" id="connDot">
+        <span class="conn-dot"></span>
+        <span class="conn-label">Connected</span>
+      </div>
+      <button class="btn-logout" id="btnLogout">↪ Logout</button>
+    </div>
+  </aside>
 
-    <section class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon">📦</div>
-        <div class="stat-body"><div class="stat-num" id="sTotal">—</div><div class="stat-lbl">Total Products</div></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">✅</div>
-        <div class="stat-body"><div class="stat-num green" id="sActive">—</div><div class="stat-lbl">Active</div></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">🚫</div>
-        <div class="stat-body"><div class="stat-num red" id="sInactive">—</div><div class="stat-lbl">Inactive</div></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">🏷️</div>
-        <div class="stat-body"><div class="stat-num accent" id="sStock">—</div><div class="stat-lbl">Total Stock</div></div>
-      </div>
-    </section>
+  <div class="content">
 
-    <section class="controls-bar">
-      <div class="search-wrap">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="searchInput" class="input-field" placeholder="Search by name or category…"/>
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="page-title">Product <em>Manager</em></h1>
+        <p class="page-sub" id="userGreeting">Manage your inventory</p>
       </div>
-      <select id="filterCat" class="input-field select-field">
-        <option value="">All Categories</option>
-      </select>
-      <select id="filterStatus" class="input-field select-field">
-        <option value="">All Status</option>
-        <option value="active">Active</option>
-        <option value="inactive">Inactive</option>
-      </select>
-      <button class="btn btn-ghost" id="btnRefresh">↺ Refresh</button>
+      <div class="topbar-right">
+        <div class="search-box">
+          <span class="search-icon">⌕</span>
+          <input type="text" id="searchInput" placeholder="Search products…"/>
+        </div>
+        <select id="filterCat" class="filter-select">
+          <option value="">All Categories</option>
+        </select>
+        <select id="filterStatus" class="filter-select">
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+        <button class="btn-refresh" id="btnRefresh" title="Refresh">↺</button>
+        <button class="btn-add-main" id="btnOpenAdd">+ Add Product</button>
+      </div>
+    </header>
+
+    <section class="stats-row">
+      <div class="stat-card" style="--delay:0s">
+        <div class="stat-top">
+          <span class="stat-label">Total Products</span>
+          <span class="stat-emoji">📦</span>
+        </div>
+        <div class="stat-value" id="sTotal">—</div>
+        <div class="stat-bar"><div class="stat-fill gold-fill" style="width:100%"></div></div>
+      </div>
+      <div class="stat-card" style="--delay:.08s">
+        <div class="stat-top">
+          <span class="stat-label">Active</span>
+          <span class="stat-emoji">✅</span>
+        </div>
+        <div class="stat-value green" id="sActive">—</div>
+        <div class="stat-bar"><div class="stat-fill green-fill" id="fillActive"></div></div>
+      </div>
+      <div class="stat-card" style="--delay:.16s">
+        <div class="stat-top">
+          <span class="stat-label">Inactive</span>
+          <span class="stat-emoji">🚫</span>
+        </div>
+        <div class="stat-value red" id="sInactive">—</div>
+        <div class="stat-bar"><div class="stat-fill red-fill" id="fillInactive"></div></div>
+      </div>
+      <div class="stat-card" style="--delay:.24s">
+        <div class="stat-top">
+          <span class="stat-label">Total Stock</span>
+          <span class="stat-emoji">🏷️</span>
+        </div>
+        <div class="stat-value gold" id="sStock">—</div>
+        <div class="stat-bar"><div class="stat-fill gold-fill" style="width:75%"></div></div>
+      </div>
     </section>
 
     <section class="table-section">
+      <div class="table-header-row">
+        <h2 class="table-title">Inventory <span class="table-count" id="rowCount">0 items</span></h2>
+      </div>
       <div class="table-wrap">
         <table class="prod-table">
           <thead>
             <tr>
-              <th>#</th><th>Name</th><th>Category</th><th>Price</th>
-              <th>Stock</th><th>Status</th><th>Created</th><th>Actions</th>
+              <th>#</th>
+              <th>Image</th>
+              <th>Product</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody id="tableBody">
-            <tr><td colspan="8" class="empty-row"><div class="spinner"></div> Loading…</td></tr>
+            <tr><td colspan="9" class="empty-row"><div class="spinner"></div> Loading inventory…</td></tr>
           </tbody>
         </table>
       </div>
-      <div class="table-footer"><span id="rowCount">0 products</span></div>
+      <div id="paginationWrap"></div>
     </section>
 
-  </main>
+  </div>
 
-  <!-- Add/Edit Modal -->
+  <!-- ADD / EDIT MODAL -->
   <div class="overlay" id="overlay">
     <div class="modal" id="modal">
       <div class="modal-head">
-        <h2 class="modal-title" id="modalTitle">Add Product</h2>
+        <div class="modal-head-left">
+          <div class="modal-icon-wrap">📦</div>
+          <h2 class="modal-title" id="modalTitle">Add Product</h2>
+        </div>
         <button class="modal-x" id="btnCloseModal">✕</button>
       </div>
       <div class="modal-body">
         <form id="productForm" novalidate>
           <input type="hidden" id="fId"/>
-          <div class="form-row two-col">
+          <div class="form-row">
             <div class="form-group">
               <label for="fName">Product Name <span class="req">*</span></label>
               <input type="text" id="fName" class="input-field" placeholder="e.g. Wireless Headphones"/>
@@ -99,7 +149,7 @@
               <span class="field-err" id="errCategory"></span>
             </div>
           </div>
-          <div class="form-row two-col">
+          <div class="form-row">
             <div class="form-group">
               <label for="fPrice">Price (USD) <span class="req">*</span></label>
               <input type="number" id="fPrice" class="input-field" placeholder="0.00" step="0.01" min="0"/>
@@ -118,9 +168,17 @@
               <option value="inactive">Inactive</option>
             </select>
           </div>
+          <div class="form-group">
+            <label for="fImage">Product Image</label>
+            <input type="file" id="fImage" class="input-field" accept="image/jpeg,image/png,image/webp"/>
+            <span style="font-size:12px;color:#6b7488;">Max 2MB — JPG, PNG, WEBP</span>
+          </div>
+          <div id="imagePreview" style="margin-top:10px;display:none;">
+            <img id="previewImg" src="" style="width:100%;max-height:150px;object-fit:contain;border-radius:8px;border:1px solid rgba(255,255,255,0.08);"/>
+          </div>
           <div class="form-actions">
-            <button type="button" class="btn btn-ghost" id="btnCancel">Cancel</button>
-            <button type="submit" class="btn btn-primary" id="btnSubmit">
+            <button type="button" class="btn-cancel" id="btnCancel">Cancel</button>
+            <button type="submit" class="btn-submit" id="btnSubmit">
               <span id="submitLabel">Save Product</span>
               <span class="btn-spinner hidden" id="submitSpinner">⏳</span>
             </button>
@@ -130,15 +188,15 @@
     </div>
   </div>
 
-  <!-- Delete Confirm Modal -->
+  <!-- DELETE CONFIRM -->
   <div class="overlay" id="deleteOverlay">
     <div class="modal confirm-modal">
-      <div class="confirm-icon">🗑️</div>
-      <h3 id="deleteMsg">Delete this product?</h3>
+      <div class="confirm-emoji">🗑️</div>
+      <h3 class="confirm-title" id="deleteMsg">Delete this product?</h3>
       <p class="confirm-sub">This action cannot be undone.</p>
-      <div class="form-actions" style="justify-content:center;gap:12px">
-        <button class="btn btn-ghost" id="btnCancelDelete">Cancel</button>
-        <button class="btn btn-danger" id="btnConfirmDelete">Yes, Delete</button>
+      <div class="confirm-actions">
+        <button class="btn-cancel" id="btnCancelDelete">Cancel</button>
+        <button class="btn-danger" id="btnConfirmDelete">Yes, Delete</button>
       </div>
     </div>
   </div>
@@ -148,5 +206,18 @@
   <script src="js/api.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/app.js"></script>
+  <script>
+    document.getElementById('fImage')?.addEventListener('change', function() {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.getElementById('previewImg').src = e.target.result;
+          document.getElementById('imagePreview').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  </script>
 </body>
 </html>

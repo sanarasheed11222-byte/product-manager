@@ -24,17 +24,21 @@ const UI = {
 
   renderTable(products) {
     const tbody    = document.getElementById('tableBody');
-    const rowCount = document.getElementById('rowCount');
-    rowCount.textContent = `${products.length} product${products.length !== 1 ? 's' : ''}`;
 
     if (!products.length) {
-      tbody.innerHTML = `<tr><td colspan="8" class="empty-row">No products found.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="9" class="empty-row">No products found.</td></tr>`;
       return;
     }
 
     tbody.innerHTML = products.map((p, i) => `
       <tr data-id="${p.id}">
         <td><span class="row-num">${i + 1}</span></td>
+        <td>
+          ${p.image
+            ? `<img src="${p.image}" style="width:38px;height:38px;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,0.08);">`
+            : `<div style="width:38px;height:38px;background:rgba(255,255,255,0.05);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;">📦</div>`
+          }
+        </td>
         <td><span class="prod-name">${UI.esc(p.name)}</span></td>
         <td><span class="cat-tag">${UI.esc(p.category)}</span></td>
         <td><span class="price-val">$${Number(p.price).toFixed(2)}</span></td>
@@ -43,8 +47,8 @@ const UI = {
         <td><span class="date-val">${UI.formatDate(p.created_at)}</span></td>
         <td>
           <div class="action-group">
-            <button class="btn-icon" data-action="edit" data-id="${p.id}" title="Edit">✏️</button>
-            <button class="btn-icon" data-action="delete" data-id="${p.id}" data-name="${UI.esc(p.name)}" title="Delete">🗑️</button>
+            <button class="btn-icon edit" data-action="edit" data-id="${p.id}" title="Edit">✏️</button>
+            <button class="btn-icon del" data-action="delete" data-id="${p.id}" data-name="${UI.esc(p.name)}" title="Delete">🗑️</button>
           </div>
         </td>
       </tr>
@@ -64,6 +68,7 @@ const UI = {
     const title   = document.getElementById('modalTitle');
     const label   = document.getElementById('submitLabel');
     document.getElementById('productForm').reset();
+    document.getElementById('imagePreview').style.display = 'none';
     UI.clearErrors();
 
     if (product) {
@@ -75,6 +80,10 @@ const UI = {
       document.getElementById('fPrice').value    = product.price;
       document.getElementById('fStock').value    = product.stock;
       document.getElementById('fStatus').value   = product.status;
+      if (product.image) {
+        document.getElementById('previewImg').src = product.image;
+        document.getElementById('imagePreview').style.display = 'block';
+      }
     } else {
       title.textContent = 'Add Product';
       label.textContent = 'Save Product';
@@ -86,6 +95,7 @@ const UI = {
   closeModal() {
     document.getElementById('overlay').classList.remove('open');
     document.getElementById('productForm').reset();
+    document.getElementById('imagePreview').style.display = 'none';
     UI.clearErrors();
   },
 
@@ -113,10 +123,10 @@ const UI = {
   validateForm(data) {
     let valid = true;
     UI.clearErrors();
-    if (!data.name)                          { UI.showError('fName',     'errName',     'Name is required.');         valid = false; }
-    if (!data.category)                      { UI.showError('fCategory', 'errCategory', 'Category is required.');     valid = false; }
-    if (isNaN(data.price) || data.price < 0) { UI.showError('fPrice',    'errPrice',    'Enter a valid price.');      valid = false; }
-    if (isNaN(data.stock) || data.stock < 0) { UI.showError('fStock',    'errStock',    'Enter a valid stock qty.');  valid = false; }
+    if (!data.name)                          { UI.showError('fName',     'errName',     'Name is required.');        valid = false; }
+    if (!data.category)                      { UI.showError('fCategory', 'errCategory', 'Category is required.');    valid = false; }
+    if (isNaN(data.price) || data.price < 0) { UI.showError('fPrice',    'errPrice',    'Enter a valid price.');     valid = false; }
+    if (isNaN(data.stock) || data.stock < 0) { UI.showError('fStock',    'errStock',    'Enter a valid stock qty.'); valid = false; }
     return valid;
   },
 
@@ -143,9 +153,10 @@ const UI = {
   },
 
   setConnectionStatus(online) {
-    const dot = document.getElementById('connDot');
-    dot.className = `connection-dot ${online ? 'online' : 'offline'}`;
-    dot.title = online ? 'API Connected' : 'API Offline';
+    const dot   = document.getElementById('connDot');
+    const label = dot.querySelector('.conn-label');
+    dot.querySelector('.conn-dot').style.background = online ? '#3dd68c' : '#f05a5a';
+    if (label) label.textContent = online ? 'Connected' : 'Offline';
   },
 
   esc(str) {
